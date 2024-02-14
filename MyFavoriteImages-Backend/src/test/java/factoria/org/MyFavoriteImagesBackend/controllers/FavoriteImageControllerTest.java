@@ -3,10 +3,13 @@ package factoria.org.MyFavoriteImagesBackend.controllers;
 import factoria.org.MyFavoriteImagesBackend.domain.models.FavoriteImage;
 import factoria.org.MyFavoriteImagesBackend.domain.services.FavoriteImageService;
 import factoria.org.MyFavoriteImagesBackend.infra.exceptions.ImageNotFoundException;
+import factoria.org.MyFavoriteImagesBackend.infra.persistence.FavoriteImageRepository;
 import factoria.org.MyFavoriteImagesBackend.infra.results.StatusCode;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -17,8 +20,11 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
@@ -84,7 +90,7 @@ class FavoriteImageControllerTest {
     }
 
     @Test
-    void testFindMyImageByIdNotFound() throws Exception {
+    void shouldThrownErrorWhenImageNotFound() throws Exception {
         //Given
         given(this.imageService.findById(Long.valueOf("1"))).willThrow(new ImageNotFoundException(1L));
 
@@ -94,5 +100,22 @@ class FavoriteImageControllerTest {
                 .andExpect(jsonPath("$.code").value(StatusCode.NOT_FOUND))
                 .andExpect(jsonPath("$.message").value("Could not find image with id: 1"))
                 .andExpect(jsonPath("$.data").isEmpty());
+    }
+
+    @Test
+    void shouldFindAllImagesSuccessfully() throws Exception {
+        //Given
+        given(this.imageService.findAll()).willReturn(this.images);
+
+        //When and then
+        this.mockMvc.perform(get("/api/v1/images").accept(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.flag").value(true))
+                .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
+                .andExpect(jsonPath("$.message").value("Find All Success"))
+                .andExpect(jsonPath("$.data", Matchers.hasSize(this.images.size())))
+                .andExpect(jsonPath("$.data[0].id").value(Long.valueOf("1")))
+                .andExpect(jsonPath("$.data[0].title").value("Image 1"))
+                .andExpect(jsonPath("$.data[1].id").value(Long.valueOf("2")))
+                .andExpect(jsonPath("$.data[1].title").value("Image 2"));
     }
 }

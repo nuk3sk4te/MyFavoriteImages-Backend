@@ -13,6 +13,8 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -28,8 +30,25 @@ class FavoriteImageServiceTest {
     @InjectMocks
     FavoriteImageService imageService;
 
+    List<FavoriteImage> images;
+
     @BeforeEach
     void setUp() {
+        FavoriteImage image1 = new FavoriteImage();
+        image1.setId(Long.valueOf("1"));
+        image1.setTitle("Image 1");
+        image1.setDescription("Description image 1");
+        image1.setUrl("image1 URL");
+
+        FavoriteImage image2 = new FavoriteImage();
+        image2.setId(Long.valueOf("2"));
+        image2.setTitle("Image 2");
+        image2.setDescription("Description image 2");
+        image2.setUrl("image2 URL");
+
+        this.images = new ArrayList<>();
+        this.images.add(image1);
+        this.images.add(image2);
     }
 
     @AfterEach
@@ -76,5 +95,18 @@ class FavoriteImageServiceTest {
         //Then
         assertThat(thrown).isInstanceOf(ImageNotFoundException.class).hasMessage("Could not find image with id: 1");
         verify(imageRepository, times(1)).findById(1L);
+    }
+
+    @Test
+    void shouldFindAllSuccessfully() {
+        //Given
+        given(imageRepository.findAll()).willReturn(this.images);
+
+        //When
+        List<FavoriteImage> actualImages = imageService.findAll();
+
+        //Then
+        assertThat(actualImages.size()).isEqualTo(this.images.size());
+        verify(imageRepository, times(1)).findAll();
     }
 }

@@ -6,6 +6,8 @@ import factoria.org.MyFavoriteImagesBackend.infra.persistence.FavoriteImageRepos
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @Transactional
 public class FavoriteImageService {
@@ -18,5 +20,9 @@ public class FavoriteImageService {
     public FavoriteImage findById(Long imageId) {
         return this.favoriteImageRepository.findById(imageId)
                 .orElseThrow(() -> new ImageNotFoundException(imageId));
+    }
+
+    public List<FavoriteImage> findAll() {
+        return this.favoriteImageRepository.findAll();
     }
 }

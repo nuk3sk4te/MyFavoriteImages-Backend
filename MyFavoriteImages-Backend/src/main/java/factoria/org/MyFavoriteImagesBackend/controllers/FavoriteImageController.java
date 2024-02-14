@@ -10,6 +10,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @RestController
 public class FavoriteImageController {
     private final FavoriteImageService imageService;
@@ -26,4 +29,14 @@ public class FavoriteImageController {
         ImageDto imageDto = this.imageToImageDtoConverter.convert(foundImage);
         return new Result(true, StatusCode.SUCCESS, "Find One Success", imageDto);
     }
+
+    @GetMapping("/api/v1/images")
+    public Result findAllImages() {
+        List<FavoriteImage> foundImages = this.imageService.findAll();
+        List<ImageDto> imagesDto = foundImages.stream()
+                .map(this.imageToImageDtoConverter::convert)
+                .collect(Collectors.toList());
+        return new Result(true, StatusCode.SUCCESS, "Find All Success", imagesDto);
+    }
+
 }
