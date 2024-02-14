@@ -68,4 +68,13 @@ public class FavoriteImageUser implements Serializable {
     public void setImages(List<FavoriteImage> images) {
         this.images = images;
     }
+
+    public void addImage(FavoriteImage image) {
+        image.setOwner(this);
+        this.images.add(image);
+    }
+
+    public Integer getNumberOfImages() {
+        return this.images.size();
+    }
 }
