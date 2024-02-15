@@ -25,4 +25,19 @@ public class FavoriteImageUserService {
     public List<FavoriteImageUser> findAll() {
         return this.userRepository.findAll();
     }
+
+    public FavoriteImageUser save(FavoriteImageUser newUser) {
+        return this.userRepository.save(newUser);
+    }
+
+    public FavoriteImageUser update(Long userId, FavoriteImageUser updatedUser) {
+        return this.userRepository.findById(userId)
+                .map(oldUser -> {
+                    oldUser.setUsername(updatedUser.getUsername());
+                    oldUser.setEnabled(updatedUser.isEnabled());
+                    oldUser.setRoles(updatedUser.getRoles());
+                    return this.userRepository.save(oldUser);
+                })
+                .orElseThrow(() -> new ObjectNotFoundException("user", userId));
+    }
 }

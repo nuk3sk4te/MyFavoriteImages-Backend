@@ -21,8 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class FavoriteImageUserServiceTest {
@@ -117,5 +116,71 @@ class FavoriteImageUserServiceTest {
         //Then
         assertThat(actualUsers.size()).isEqualTo(this.users.size());
         verify(userRepository, times(1)).findAll();
+    }
+
+    @Test
+    void shouldSaveSuccessfully(){
+        //Given
+        FavoriteImageUser newUser = new FavoriteImageUser();
+        newUser.setUsername("New User");
+        newUser.setPassword("987654");
+        newUser.setEnabled(true);
+        newUser.setRoles("user");
+
+        given(userRepository.save(newUser)).willReturn(newUser);
+
+        //When
+        FavoriteImageUser savedUser = userService.save(newUser);
+
+        //Then
+        assertThat(savedUser.getUsername()).isEqualTo("New User");
+        assertThat(savedUser.isEnabled()).isEqualTo(true);
+        assertThat(savedUser.getRoles()).isEqualTo("user");
+        verify(userRepository, times(1)).save(newUser);
+    }
+
+    @Test
+    void shouldUpdateSuccessfully() {
+        //Given
+        FavoriteImageUser oldUser = new FavoriteImageUser();
+        oldUser.setUsername("New User 1");
+        oldUser.setEnabled(true);
+        oldUser.setRoles("user");
+
+        FavoriteImageUser updatedUser = new FavoriteImageUser();
+        updatedUser.setUsername("New User 1 updated");
+        updatedUser.setEnabled(true);
+        updatedUser.setRoles("user");
+
+        given(userRepository.findById(1L)).willReturn(Optional.of(oldUser));
+        given(userRepository.save(oldUser)).willReturn(oldUser);
+
+        //When
+        FavoriteImageUser result = userService.update(1L, updatedUser);
+
+        //Then
+        assertThat(result.getId()).isEqualTo(updatedUser.getId());
+        assertThat(result.getUsername()).isEqualTo(updatedUser.getUsername());
+        verify(userRepository, times(1)).findById(1L);
+        verify(userRepository, times(1)).save(oldUser);
+    }
+
+    @Test
+    void shouldThrownErrorWithNonExistentIdWhenUpdate() {
+        //Given
+        FavoriteImageUser updatedUser = new FavoriteImageUser();
+        updatedUser.setUsername("New User 1 updated");
+        updatedUser.setEnabled(true);
+        updatedUser.setRoles("user");
+
+        given(userRepository.findById(1L)).willReturn(Optional.empty());
+
+        //When
+        assertThrows(ObjectNotFoundException.class, () -> {
+            userService.update(1L, updatedUser);
+        });
+
+        //Then
+        verify(userRepository, times(1)).findById(1L);
     }
 }

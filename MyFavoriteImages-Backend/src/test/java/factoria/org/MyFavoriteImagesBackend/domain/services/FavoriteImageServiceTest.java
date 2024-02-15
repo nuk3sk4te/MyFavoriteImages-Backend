@@ -199,7 +199,7 @@ class FavoriteImageServiceTest {
     }
 
     @Test
-    void testDeleteNotFound() {
+    void shouldThrownErrorWithNonExistentIdWhenDelete() {
         //Given
         given(imageRepository.findById(1L)).willReturn(Optional.empty());
 
