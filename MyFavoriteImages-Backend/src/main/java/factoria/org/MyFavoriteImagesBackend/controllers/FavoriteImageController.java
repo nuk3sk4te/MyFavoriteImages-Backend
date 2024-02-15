@@ -7,12 +7,14 @@ import factoria.org.MyFavoriteImagesBackend.infra.dtos.converters.ImageDtoToImag
 import factoria.org.MyFavoriteImagesBackend.infra.dtos.converters.ImageToImageDtoConverter;
 import factoria.org.MyFavoriteImagesBackend.infra.results.Result;
 import factoria.org.MyFavoriteImagesBackend.infra.results.StatusCode;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
+@RequestMapping("/api/v1/images")
 public class FavoriteImageController {
     private final FavoriteImageService imageService;
     private final ImageToImageDtoConverter imageToImageDtoConverter;
@@ -25,14 +27,14 @@ public class FavoriteImageController {
         this.imageDtoToImageConverter = imageDtoToImageConverter;
     }
 
-    @GetMapping("/api/v1/images/{imageId}")
+    @GetMapping("/{imageId}")
     public Result findImageById(@PathVariable Long imageId){
         FavoriteImage foundImage = this.imageService.findById(imageId);
         ImageDto imageDto = this.imageToImageDtoConverter.convert(foundImage);
         return new Result(true, StatusCode.SUCCESS, "Find One Success", imageDto);
     }
 
-    @GetMapping("/api/v1/images")
+    @GetMapping
     public Result findAllImages() {
         List<FavoriteImage> foundImages = this.imageService.findAll();
         List<ImageDto> imagesDto = foundImages.stream()
@@ -41,8 +43,8 @@ public class FavoriteImageController {
         return new Result(true, StatusCode.SUCCESS, "Find All Success", imagesDto);
     }
 
-    @PostMapping("/api/v1/images")
-    public Result addImage(@RequestBody ImageDto myFavoriteImageDto) {
+    @PostMapping
+    public Result addImage(@RequestBody @Valid ImageDto myFavoriteImageDto) {
         FavoriteImage newImage = this.imageDtoToImageConverter.convert(myFavoriteImageDto);
         FavoriteImage savedImage = this.imageService.save(newImage);
 

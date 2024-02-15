@@ -12,6 +12,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -36,6 +37,8 @@ class FavoriteImageControllerTest {
     @Autowired
     ObjectMapper objectMapper;
     List<FavoriteImage> images;
+    @Value("/api/v1/images")
+    String baseUrl;
 
     @BeforeEach
     void setUp() {
@@ -80,7 +83,7 @@ class FavoriteImageControllerTest {
         given(this.imageService.findById(1L)).willReturn(this.images.get(0));
 
         //When and then
-        this.mockMvc.perform(get("/api/v1/images/1").accept(MediaType.APPLICATION_JSON))
+        this.mockMvc.perform(get(this.baseUrl + "/1").accept(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.flag").value(true))
                 .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
                 .andExpect(jsonPath("$.message").value("Find One Success"))
@@ -94,7 +97,7 @@ class FavoriteImageControllerTest {
         given(this.imageService.findById(Long.valueOf("1"))).willThrow(new ImageNotFoundException(1L));
 
         //When and then
-        this.mockMvc.perform(get("/api/v1/images/1").accept(MediaType.APPLICATION_JSON))
+        this.mockMvc.perform(get(this.baseUrl + "/1").accept(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.flag").value(false))
                 .andExpect(jsonPath("$.code").value(StatusCode.NOT_FOUND))
                 .andExpect(jsonPath("$.message").value("Could not find image with id: 1"))
@@ -107,7 +110,7 @@ class FavoriteImageControllerTest {
         given(this.imageService.findAll()).willReturn(this.images);
 
         //When and then
-        this.mockMvc.perform(get("/api/v1/images").accept(MediaType.APPLICATION_JSON))
+        this.mockMvc.perform(get(this.baseUrl).accept(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.flag").value(true))
                 .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
                 .andExpect(jsonPath("$.message").value("Find All Success"))
@@ -137,13 +140,13 @@ class FavoriteImageControllerTest {
         given(this.imageService.save(Mockito.any(FavoriteImage.class))).willReturn(savedImage);
 
         //When and then
-        this.mockMvc.perform(post("/api/v1/images").contentType(MediaType.APPLICATION_JSON).content(json).accept(MediaType.APPLICATION_JSON))
+        this.mockMvc.perform(post(this.baseUrl).contentType(MediaType.APPLICATION_JSON).content(json).accept(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.flag").value(true))
                 .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
                 .andExpect(jsonPath("$.message").value("Add Success"))
                 .andExpect(jsonPath("$.data.id").isNotEmpty())
                 .andExpect(jsonPath("$.data.title").value(savedImage.getTitle()))
                 .andExpect(jsonPath("$.data.description").value(savedImage.getDescription()))
-                .andExpect(jsonPath("$.data.imageUrl").value(savedImage.getUrl()));
+                .andExpect(jsonPath("$.data.url").value(savedImage.getUrl()));
     }
 }

@@ -13,7 +13,7 @@ public class ImageDtoToImageConverter implements Converter<ImageDto, FavoriteIma
         image.setId(source.id());
         image.setTitle(source.title());
         image.setDescription(source.description());
-        image.setUrl(source.imageUrl());
+        image.setUrl(source.url());
         return image;
     }
 }
