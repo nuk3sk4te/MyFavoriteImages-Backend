@@ -11,18 +11,22 @@ import java.util.List;
 @Service
 @Transactional
 public class FavoriteImageService {
-    private final FavoriteImageRepository favoriteImageRepository;
+    private final FavoriteImageRepository imageRepository;
 
     public FavoriteImageService(FavoriteImageRepository favoriteImageRepository) {
-        this.favoriteImageRepository = favoriteImageRepository;
+        this.imageRepository = favoriteImageRepository;
     }
 
     public FavoriteImage findById(Long imageId) {
-        return this.favoriteImageRepository.findById(imageId)
+        return this.imageRepository.findById(imageId)
                 .orElseThrow(() -> new ImageNotFoundException(imageId));
     }
 
     public List<FavoriteImage> findAll() {
-        return this.favoriteImageRepository.findAll();
+        return this.imageRepository.findAll();
+    }
+
+    public FavoriteImage save(FavoriteImage newImage) {
+        return this.imageRepository.save(newImage);
     }
 }

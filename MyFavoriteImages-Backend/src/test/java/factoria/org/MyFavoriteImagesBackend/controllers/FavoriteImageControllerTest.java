@@ -1,15 +1,16 @@
 package factoria.org.MyFavoriteImagesBackend.controllers;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import factoria.org.MyFavoriteImagesBackend.domain.models.FavoriteImage;
 import factoria.org.MyFavoriteImagesBackend.domain.services.FavoriteImageService;
+import factoria.org.MyFavoriteImagesBackend.infra.dtos.ImageDto;
 import factoria.org.MyFavoriteImagesBackend.infra.exceptions.ImageNotFoundException;
-import factoria.org.MyFavoriteImagesBackend.infra.persistence.FavoriteImageRepository;
 import factoria.org.MyFavoriteImagesBackend.infra.results.StatusCode;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -20,12 +21,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 @SpringBootTest
@@ -35,7 +33,8 @@ class FavoriteImageControllerTest {
     MockMvc mockMvc;
     @MockBean
     FavoriteImageService imageService;
-
+    @Autowired
+    ObjectMapper objectMapper;
     List<FavoriteImage> images;
 
     @BeforeEach
@@ -117,5 +116,34 @@ class FavoriteImageControllerTest {
                 .andExpect(jsonPath("$.data[0].title").value("Image 1"))
                 .andExpect(jsonPath("$.data[1].id").value(Long.valueOf("2")))
                 .andExpect(jsonPath("$.data[1].title").value("Image 2"));
+    }
+
+    @Test
+    void shouldSaveImageSuccessfully() throws Exception {
+        //Given
+        ImageDto myFavoriteImageDto = new ImageDto(null,
+                "New Image",
+                "New Image description",
+                "New Image URL",
+                null);
+        String json = this.objectMapper.writeValueAsString(myFavoriteImageDto);
+
+        FavoriteImage savedImage = new FavoriteImage();
+        savedImage.setId(Long.valueOf("1"));
+        savedImage.setTitle("New Image");
+        savedImage.setDescription("New Image description");
+        savedImage.setUrl("New Image URL");
+
+        given(this.imageService.save(Mockito.any(FavoriteImage.class))).willReturn(savedImage);
+
+        //When and then
+        this.mockMvc.perform(post("/api/v1/images").contentType(MediaType.APPLICATION_JSON).content(json).accept(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.flag").value(true))
+                .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
+                .andExpect(jsonPath("$.message").value("Add Success"))
+                .andExpect(jsonPath("$.data.id").isNotEmpty())
+                .andExpect(jsonPath("$.data.title").value(savedImage.getTitle()))
+                .andExpect(jsonPath("$.data.description").value(savedImage.getDescription()))
+                .andExpect(jsonPath("$.data.imageUrl").value(savedImage.getUrl()));
     }
 }

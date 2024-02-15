@@ -109,4 +109,24 @@ class FavoriteImageServiceTest {
         assertThat(actualImages.size()).isEqualTo(this.images.size());
         verify(imageRepository, times(1)).findAll();
     }
+
+    @Test
+    void shouldSaveSuccessfully(){
+        //Given
+        FavoriteImage newImage = new FavoriteImage();
+        newImage.setTitle("New Image 1");
+        newImage.setDescription("New Image 2 description");
+        newImage.setUrl("New Image 2 URL");
+
+        given(imageRepository.save(newImage)).willReturn(newImage);
+
+        //When
+        FavoriteImage savedImage = imageService.save(newImage);
+
+        //Then
+        assertThat(savedImage.getTitle()).isEqualTo("New Image 1");
+        assertThat(savedImage.getDescription()).isEqualTo("New Image 2 description");
+        assertThat(savedImage.getUrl()).isEqualTo("New Image 2 URL");
+        verify(imageRepository, times(1)).save(newImage);
+    }
 }

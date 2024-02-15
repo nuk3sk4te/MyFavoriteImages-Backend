@@ -3,12 +3,11 @@ package factoria.org.MyFavoriteImagesBackend.controllers;
 import factoria.org.MyFavoriteImagesBackend.domain.models.FavoriteImage;
 import factoria.org.MyFavoriteImagesBackend.domain.services.FavoriteImageService;
 import factoria.org.MyFavoriteImagesBackend.infra.dtos.ImageDto;
+import factoria.org.MyFavoriteImagesBackend.infra.dtos.converters.ImageDtoToImageConverter;
 import factoria.org.MyFavoriteImagesBackend.infra.dtos.converters.ImageToImageDtoConverter;
 import factoria.org.MyFavoriteImagesBackend.infra.results.Result;
 import factoria.org.MyFavoriteImagesBackend.infra.results.StatusCode;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -18,9 +17,12 @@ public class FavoriteImageController {
     private final FavoriteImageService imageService;
     private final ImageToImageDtoConverter imageToImageDtoConverter;
 
-    public FavoriteImageController(FavoriteImageService imageService, ImageToImageDtoConverter imageToImageDtoConverter) {
+    private final ImageDtoToImageConverter imageDtoToImageConverter;
+
+    public FavoriteImageController(FavoriteImageService imageService, ImageToImageDtoConverter imageToImageDtoConverter, ImageDtoToImageConverter imageDtoToImageConverter) {
         this.imageService = imageService;
         this.imageToImageDtoConverter = imageToImageDtoConverter;
+        this.imageDtoToImageConverter = imageDtoToImageConverter;
     }
 
     @GetMapping("/api/v1/images/{imageId}")
@@ -39,4 +41,12 @@ public class FavoriteImageController {
         return new Result(true, StatusCode.SUCCESS, "Find All Success", imagesDto);
     }
 
+    @PostMapping("/api/v1/images")
+    public Result addImage(@RequestBody ImageDto myFavoriteImageDto) {
+        FavoriteImage newImage = this.imageDtoToImageConverter.convert(myFavoriteImageDto);
+        FavoriteImage savedImage = this.imageService.save(newImage);
+
+        ImageDto savedImageDto = this.imageToImageDtoConverter.convert(savedImage);
+        return new Result(true, StatusCode.SUCCESS, "Add Success", savedImageDto );
+    }
 }
