@@ -22,9 +22,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 @SpringBootTest
@@ -94,7 +94,7 @@ class FavoriteImageControllerTest {
     @Test
     void shouldThrownErrorWhenImageNotFound() throws Exception {
         //Given
-        given(this.imageService.findById(Long.valueOf("1"))).willThrow(new ImageNotFoundException(1L));
+        given(this.imageService.findById(1L)).willThrow(new ImageNotFoundException(1L));
 
         //When and then
         this.mockMvc.perform(get(this.baseUrl + "/1").accept(MediaType.APPLICATION_JSON))
@@ -115,9 +115,9 @@ class FavoriteImageControllerTest {
                 .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
                 .andExpect(jsonPath("$.message").value("Find All Success"))
                 .andExpect(jsonPath("$.data", Matchers.hasSize(this.images.size())))
-                .andExpect(jsonPath("$.data[0].id").value(Long.valueOf("1")))
+                .andExpect(jsonPath("$.data[0].id").value(1L))
                 .andExpect(jsonPath("$.data[0].title").value("Image 1"))
-                .andExpect(jsonPath("$.data[1].id").value(Long.valueOf("2")))
+                .andExpect(jsonPath("$.data[1].id").value(2L))
                 .andExpect(jsonPath("$.data[1].title").value("Image 2"));
     }
 
@@ -132,7 +132,7 @@ class FavoriteImageControllerTest {
         String json = this.objectMapper.writeValueAsString(myFavoriteImageDto);
 
         FavoriteImage savedImage = new FavoriteImage();
-        savedImage.setId(Long.valueOf("1"));
+        savedImage.setId(1L);
         savedImage.setTitle("New Image");
         savedImage.setDescription("New Image description");
         savedImage.setUrl("New Image URL");
@@ -148,5 +148,54 @@ class FavoriteImageControllerTest {
                 .andExpect(jsonPath("$.data.title").value(savedImage.getTitle()))
                 .andExpect(jsonPath("$.data.description").value(savedImage.getDescription()))
                 .andExpect(jsonPath("$.data.url").value(savedImage.getUrl()));
+    }
+
+    @Test
+    void shouldUpdateImageSuccessfully() throws Exception {
+        //Given
+        ImageDto myFavoriteImageDto = new ImageDto(1L,
+                "Image 1",
+                "Image 1 description updated",
+                "Image 1 URL",
+                null);
+        String json = this.objectMapper.writeValueAsString(myFavoriteImageDto);
+
+        FavoriteImage updatedImage = new FavoriteImage();
+        updatedImage.setId(1L);
+        updatedImage.setTitle("Image 1");
+        updatedImage.setDescription("Image 1 description updated");
+        updatedImage.setUrl("Image 1 URL");
+
+        given(this.imageService.update(eq(1L), Mockito.any(FavoriteImage.class))).willReturn(updatedImage);
+
+        //When and then
+        this.mockMvc.perform(put(this.baseUrl + "/1").contentType(MediaType.APPLICATION_JSON).content(json).accept(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.flag").value(true))
+                .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
+                .andExpect(jsonPath("$.message").value("Updated Success"))
+                .andExpect(jsonPath("$.data.id").value(1L))
+                .andExpect(jsonPath("$.data.title").value(updatedImage.getTitle()))
+                .andExpect(jsonPath("$.data.description").value(updatedImage.getDescription()))
+                .andExpect(jsonPath("$.data.url").value(updatedImage.getUrl()));
+    }
+
+    @Test
+    void shouldThrownErrorWithNonExistentImageIdWhenUpdate() throws Exception {
+        //Given
+        ImageDto myFavoriteImageDto = new ImageDto(1L,
+                "Image 1",
+                "Image 1 description updated",
+                "Image 1 URL",
+                null);
+        String json = this.objectMapper.writeValueAsString(myFavoriteImageDto);
+
+        given(this.imageService.update(eq(1L), Mockito.any(FavoriteImage.class))).willThrow(new ImageNotFoundException(1L));
+
+        //When and then
+        this.mockMvc.perform(put(this.baseUrl + "/1").contentType(MediaType.APPLICATION_JSON).content(json).accept(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.flag").value(false))
+                .andExpect(jsonPath("$.code").value(StatusCode.NOT_FOUND))
+                .andExpect(jsonPath("$.message").value("Could not find image with id: 1"))
+                .andExpect(jsonPath("$.data").isEmpty());
     }
 }

@@ -29,4 +29,15 @@ public class FavoriteImageService {
     public FavoriteImage save(FavoriteImage newImage) {
         return this.imageRepository.save(newImage);
     }
+
+    public FavoriteImage update(Long imageId, FavoriteImage updatedImage) {
+        return this.imageRepository.findById(imageId)
+                .map(oldImage -> {
+                    oldImage.setTitle(updatedImage.getTitle());
+                    oldImage.setDescription(updatedImage.getDescription());
+                    oldImage.setUrl(updatedImage.getUrl());
+                    return this.imageRepository.save(oldImage);
+                })
+                .orElseThrow(() -> new ImageNotFoundException(imageId));
+    }
 }

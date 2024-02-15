@@ -51,4 +51,13 @@ public class FavoriteImageController {
         ImageDto savedImageDto = this.imageToImageDtoConverter.convert(savedImage);
         return new Result(true, StatusCode.SUCCESS, "Add Success", savedImageDto );
     }
+
+    @PutMapping("/{imageId}")
+    public Result updateImage(@PathVariable Long imageId, @Valid @RequestBody ImageDto myFavoriteImageDto) {
+        FavoriteImage updatedImage = this.imageDtoToImageConverter.convert(myFavoriteImageDto);
+        FavoriteImage result = this.imageService.update(imageId, updatedImage);
+
+        ImageDto updatedImageDto = this.imageToImageDtoConverter.convert(result);
+        return new Result(true, StatusCode.SUCCESS, "Updated Success", updatedImageDto );
+    }
 }

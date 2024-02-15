@@ -19,6 +19,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
 
@@ -35,13 +36,13 @@ class FavoriteImageServiceTest {
     @BeforeEach
     void setUp() {
         FavoriteImage image1 = new FavoriteImage();
-        image1.setId(Long.valueOf("1"));
+        image1.setId(1L);
         image1.setTitle("Image 1");
         image1.setDescription("Description image 1");
         image1.setUrl("image1 URL");
 
         FavoriteImage image2 = new FavoriteImage();
-        image2.setId(Long.valueOf("2"));
+        image2.setId(2L);
         image2.setTitle("Image 2");
         image2.setDescription("Description image 2");
         image2.setUrl("image2 URL");
@@ -128,5 +129,53 @@ class FavoriteImageServiceTest {
         assertThat(savedImage.getDescription()).isEqualTo("New Image 2 description");
         assertThat(savedImage.getUrl()).isEqualTo("New Image 2 URL");
         verify(imageRepository, times(1)).save(newImage);
+    }
+
+    @Test
+    void shouldUpdateSuccessfully() {
+        //Given
+        FavoriteImage oldImage = new FavoriteImage();
+        oldImage.setId(1L);
+        oldImage.setTitle("New Image 1");
+        oldImage.setDescription("New Image 1 description");
+        oldImage.setUrl("New Image 1 URL");
+
+        FavoriteImage updatedImage = new FavoriteImage();
+        updatedImage.setId(1L);
+        updatedImage.setTitle("New Image 1");
+        updatedImage.setDescription("New Image 1 description updated");
+        updatedImage.setUrl("New Image 1 URL");
+
+        given(imageRepository.findById(1L)).willReturn(Optional.of(oldImage));
+        given(imageRepository.save(oldImage)).willReturn(oldImage);
+
+        //When
+        FavoriteImage result = imageService.update(1L, updatedImage);
+
+        //Then
+        assertThat(result.getId()).isEqualTo(updatedImage.getId());
+        assertThat(result.getDescription()).isEqualTo(updatedImage.getDescription());
+        verify(imageRepository, times(1)).findById(1L);
+        verify(imageRepository, times(1)).save(oldImage);
+    }
+
+    @Test
+    void shouldThrownErrorWithNonExistentIdWhenUpdate() {
+        //Given
+        FavoriteImage updatedImage = new FavoriteImage();
+        updatedImage.setId(1L);
+        updatedImage.setTitle("New Image 1");
+        updatedImage.setDescription("New Image 1 description updated");
+        updatedImage.setUrl("New Image 1 URL");
+
+        given(imageRepository.findById(1L)).willReturn(Optional.empty());
+
+        //When
+        assertThrows(ImageNotFoundException.class, () -> {
+            imageService.update(1L, updatedImage);
+        });
+
+        //Then
+        verify(imageRepository, times(1)).findById(1L);
     }
 }
