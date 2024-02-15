@@ -13,6 +13,8 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -30,8 +32,27 @@ class FavoriteImageUserServiceTest {
     @InjectMocks
     FavoriteImageUserService userService;
 
+    List<FavoriteImageUser> users;
+
     @BeforeEach
     void setUp() {
+        FavoriteImageUser user1 = new FavoriteImageUser();
+        user1.setId(1L);
+        user1.setUsername("User1");
+        user1.setPassword("123456");
+        user1.setEnabled(true);
+        user1.setRoles("user");
+
+        FavoriteImageUser user2 = new FavoriteImageUser();
+        user2.setId(2L);
+        user2.setUsername("User2");
+        user2.setPassword("654321");
+        user2.setEnabled(true);
+        user2.setRoles("admin");
+
+        this.users = new ArrayList<>();
+        this.users.add(user1);
+        this.users.add(user2);
     }
 
     @AfterEach
@@ -77,11 +98,24 @@ class FavoriteImageUserServiceTest {
 
         //When
         Throwable thrown = catchThrowable(()-> {
-            FavoriteImageUser returnedImage = userService.findById(1L);
+            FavoriteImageUser returnedUser = userService.findById(1L);
         });
 
         //Then
         assertThat(thrown).isInstanceOf(ObjectNotFoundException.class).hasMessage("Could not find user with id: 1");
         verify(userRepository, times(1)).findById(Long.valueOf("1"));
+    }
+
+    @Test
+    void shouldFindAllSuccessfully() {
+        //Given
+        given(userRepository.findAll()).willReturn(this.users);
+
+        //When
+        List<FavoriteImageUser> actualUsers = userService.findAll();
+
+        //Then
+        assertThat(actualUsers.size()).isEqualTo(this.users.size());
+        verify(userRepository, times(1)).findAll();
     }
 }

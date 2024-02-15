@@ -16,9 +16,9 @@ import java.util.Map;
 
 @RestControllerAdvice
 public class ExceptionHandlerAdvice {
-    @ExceptionHandler(ImageNotFoundException.class)
+    @ExceptionHandler(ObjectNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    Result handleImageNotFoundException(ImageNotFoundException exception){
+    Result handleImageNotFoundException(ObjectNotFoundException exception){
         return new Result(false, StatusCode.NOT_FOUND, exception.getMessage());
     }
 

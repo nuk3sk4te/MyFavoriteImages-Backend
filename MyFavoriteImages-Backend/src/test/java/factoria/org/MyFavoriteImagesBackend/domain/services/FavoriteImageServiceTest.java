@@ -2,7 +2,7 @@ package factoria.org.MyFavoriteImagesBackend.domain.services;
 
 import factoria.org.MyFavoriteImagesBackend.domain.models.FavoriteImage;
 import factoria.org.MyFavoriteImagesBackend.domain.models.FavoriteImageUser;
-import factoria.org.MyFavoriteImagesBackend.infra.exceptions.ImageNotFoundException;
+import factoria.org.MyFavoriteImagesBackend.infra.exceptions.ObjectNotFoundException;
 import factoria.org.MyFavoriteImagesBackend.infra.persistence.FavoriteImageRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -94,7 +94,7 @@ class FavoriteImageServiceTest {
         });
 
         //Then
-        assertThat(thrown).isInstanceOf(ImageNotFoundException.class).hasMessage("Could not find image with id: 1");
+        assertThat(thrown).isInstanceOf(ObjectNotFoundException.class).hasMessage("Could not find image with id: 1");
         verify(imageRepository, times(1)).findById(1L);
     }
 
@@ -171,7 +171,7 @@ class FavoriteImageServiceTest {
         given(imageRepository.findById(1L)).willReturn(Optional.empty());
 
         //When
-        assertThrows(ImageNotFoundException.class, () -> {
+        assertThrows(ObjectNotFoundException.class, () -> {
             imageService.update(1L, updatedImage);
         });
 
@@ -204,7 +204,7 @@ class FavoriteImageServiceTest {
         given(imageRepository.findById(1L)).willReturn(Optional.empty());
 
         //When
-        assertThrows(ImageNotFoundException.class,() -> {
+        assertThrows(ObjectNotFoundException.class,() -> {
             imageService.delete(1L);
         });
 
