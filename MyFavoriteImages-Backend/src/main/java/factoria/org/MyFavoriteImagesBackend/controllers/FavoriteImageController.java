@@ -60,4 +60,10 @@ public class FavoriteImageController {
         ImageDto updatedImageDto = this.imageToImageDtoConverter.convert(result);
         return new Result(true, StatusCode.SUCCESS, "Updated Success", updatedImageDto );
     }
+
+    @DeleteMapping("/{imageId}")
+    public Result deleteImage(@PathVariable Long imageId) {
+        this.imageService.delete(imageId);
+        return new Result(true, StatusCode.SUCCESS, "Delete Success");
+    }
 }

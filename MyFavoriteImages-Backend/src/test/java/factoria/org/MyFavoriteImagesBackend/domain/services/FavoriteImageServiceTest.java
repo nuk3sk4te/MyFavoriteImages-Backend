@@ -178,4 +178,37 @@ class FavoriteImageServiceTest {
         //Then
         verify(imageRepository, times(1)).findById(1L);
     }
+
+    @Test
+    void shouldDeleteSuccessfully() {
+        //Given
+        FavoriteImage image = new FavoriteImage();
+        image.setId(1L);
+        image.setTitle("Image 1");
+        image.setDescription("Image 1 description");
+        image.setUrl("Image 1 URL");
+
+        given(imageRepository.findById(1L)).willReturn(Optional.of(image));
+        doNothing().when(imageRepository).deleteById(1L);
+
+        //When
+        imageService.delete(1L);
+
+        //Then
+        verify(imageRepository, times(1)).deleteById(1L);
+    }
+
+    @Test
+    void testDeleteNotFound() {
+        //Given
+        given(imageRepository.findById(1L)).willReturn(Optional.empty());
+
+        //When
+        assertThrows(ImageNotFoundException.class,() -> {
+            imageService.delete(1L);
+        });
+
+        //Then
+        verify(imageRepository, times(1)).findById(1L);
+    }
 }

@@ -40,4 +40,10 @@ public class FavoriteImageService {
                 })
                 .orElseThrow(() -> new ImageNotFoundException(imageId));
     }
+
+    public void delete(Long imageId) {
+        this.imageRepository.findById(imageId)
+                .orElseThrow(() -> new ImageNotFoundException(imageId));
+        this.imageRepository.deleteById(imageId);
+    }
 }
