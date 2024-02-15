@@ -40,4 +40,10 @@ public class FavoriteImageUserService {
                 })
                 .orElseThrow(() -> new ObjectNotFoundException("user", userId));
     }
+
+    public void delete(Long userId) {
+        this.userRepository.findById(userId)
+                .orElseThrow(() -> new ObjectNotFoundException("user", userId));
+        this.userRepository.deleteById(userId);
+    }
 }

@@ -25,6 +25,8 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -183,6 +185,32 @@ class FavoriteImageUserControllerTest {
 
         //When and then
         this.mockMvc.perform(put(this.baseUrl + "/1").contentType(MediaType.APPLICATION_JSON).content(json).accept(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.flag").value(false))
+                .andExpect(jsonPath("$.code").value(StatusCode.NOT_FOUND))
+                .andExpect(jsonPath("$.message").value("Could not find user with id: 1"))
+                .andExpect(jsonPath("$.data").isEmpty());
+    }
+
+    @Test
+    void shouldDeleteUserSuccessfully() throws Exception {
+        //Given
+        doNothing().when(this.userService).delete(1L);
+
+        //When and then
+        this.mockMvc.perform(delete(this.baseUrl + "/1").accept(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.flag").value(true))
+                .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
+                .andExpect(jsonPath("$.message").value("Delete Success"))
+                .andExpect(jsonPath("$.data").isEmpty());
+    }
+
+    @Test
+    void shouldThrownErrorWithNonExistentUserIdWhenDelete() throws Exception {
+        //Given
+        doThrow(new ObjectNotFoundException("user", 1L)).when(this.userService).delete(1L);
+
+        //When and then
+        this.mockMvc.perform(delete(this.baseUrl + "/1").accept(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.flag").value(false))
                 .andExpect(jsonPath("$.code").value(StatusCode.NOT_FOUND))
                 .andExpect(jsonPath("$.message").value("Could not find user with id: 1"))

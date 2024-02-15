@@ -61,4 +61,10 @@ public class FavoriteImageUserController {
         UserDto updatedUserDto = this.userToUserDtoConverter.convert(result);
         return new Result(true, StatusCode.SUCCESS, "Updated Success", updatedUserDto);
     }
+
+    @DeleteMapping("{userId}")
+    public Result deleteUser(@PathVariable Long userId) {
+        this.userService.delete(userId);
+        return new Result(true, StatusCode.SUCCESS, "Delete Success");
+    }
 }

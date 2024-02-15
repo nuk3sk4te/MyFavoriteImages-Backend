@@ -183,4 +183,37 @@ class FavoriteImageUserServiceTest {
         //Then
         verify(userRepository, times(1)).findById(1L);
     }
+
+    @Test
+    void shouldDeleteSuccessfully() {
+        //Given
+        FavoriteImageUser user = new FavoriteImageUser();
+        user.setId(1L);
+        user.setUsername("User");
+        user.setEnabled(true);
+        user.setRoles("user");
+
+        given(userRepository.findById(1L)).willReturn(Optional.of(user));
+        doNothing().when(userRepository).deleteById(1L);
+
+        //When
+        userService.delete(1L);
+
+        //Then
+        verify(userRepository, times(1)).deleteById(Long.valueOf("1"));
+    }
+
+    @Test
+    void shouldThrownErrorWithNonExistentIdWhenDelete() {
+        //Given
+        given(userRepository.findById(1L)).willReturn(Optional.empty());
+
+        //When
+        assertThrows(ObjectNotFoundException.class,() -> {
+            userService.delete(1L);
+        });
+
+        //Then
+        verify(userRepository, times(1)).findById(1L);
+    }
 }
