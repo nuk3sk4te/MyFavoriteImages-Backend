@@ -2,6 +2,7 @@ package factoria.org.MyFavoriteImagesBackend.infra;
 
 import factoria.org.MyFavoriteImagesBackend.domain.models.FavoriteImage;
 import factoria.org.MyFavoriteImagesBackend.domain.models.FavoriteImageUser;
+import factoria.org.MyFavoriteImagesBackend.domain.services.FavoriteImageUserService;
 import factoria.org.MyFavoriteImagesBackend.infra.persistence.FavoriteImageRepository;
 import factoria.org.MyFavoriteImagesBackend.infra.persistence.FavoriteImageUserRepository;
 import org.springframework.boot.CommandLineRunner;
@@ -10,11 +11,11 @@ import org.springframework.stereotype.Component;
 @Component
 public class DBDataInitializer implements CommandLineRunner {
     private final FavoriteImageRepository imageRepository;
-    private final FavoriteImageUserRepository userRepository;
+    private final FavoriteImageUserService userService;
 
-    public DBDataInitializer(FavoriteImageRepository imageRepository, FavoriteImageUserRepository userRepository) {
+    public DBDataInitializer(FavoriteImageRepository imageRepository, FavoriteImageUserService userService) {
         this.imageRepository = imageRepository;
-        this.userRepository = userRepository;
+        this.userService = userService;
     }
 
     @Override
@@ -72,8 +73,8 @@ public class DBDataInitializer implements CommandLineRunner {
         user2.addImage(image4);
 
         //Saving data in DB
-        userRepository.save(user1);
-        userRepository.save(user2);
+        userService.save(user1);
+        userService.save(user2);
         imageRepository.save(image5);
     }
 }

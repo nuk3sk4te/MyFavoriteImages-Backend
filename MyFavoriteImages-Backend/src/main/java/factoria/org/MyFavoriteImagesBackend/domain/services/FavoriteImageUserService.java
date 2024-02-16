@@ -1,20 +1,28 @@
 package factoria.org.MyFavoriteImagesBackend.domain.services;
 
 import factoria.org.MyFavoriteImagesBackend.domain.models.FavoriteImageUser;
+import factoria.org.MyFavoriteImagesBackend.infra.MyUserPrincipal;
 import factoria.org.MyFavoriteImagesBackend.infra.exceptions.ObjectNotFoundException;
+import factoria.org.MyFavoriteImagesBackend.infra.exceptions.UserNameNotFoundException;
 import factoria.org.MyFavoriteImagesBackend.infra.persistence.FavoriteImageUserRepository;
 import jakarta.transaction.Transactional;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
 @Transactional
-public class FavoriteImageUserService {
+public class FavoriteImageUserService implements UserDetailsService {
     private final FavoriteImageUserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public FavoriteImageUserService(FavoriteImageUserRepository userRepository) {
+    public FavoriteImageUserService(FavoriteImageUserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public FavoriteImageUser findById(Long userId) {
@@ -27,6 +35,7 @@ public class FavoriteImageUserService {
     }
 
     public FavoriteImageUser save(FavoriteImageUser newUser) {
+        newUser.setPassword(this.passwordEncoder.encode(newUser.getPassword()));
         return this.userRepository.save(newUser);
     }
 
@@ -45,5 +54,12 @@ public class FavoriteImageUserService {
         this.userRepository.findById(userId)
                 .orElseThrow(() -> new ObjectNotFoundException("user", userId));
         this.userRepository.deleteById(userId);
+    }
+
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        return this.userRepository.findByUsername(username)
+                .map(user -> new MyUserPrincipal(user))
+                .orElseThrow(() -> new UserNameNotFoundException(username));
     }
 }

@@ -38,4 +38,10 @@ public class ExceptionHandlerAdvice {
         });
         return new Result(false, StatusCode.INVALID_ARGUMENT, "Provided arguments are invalid, see data for details.", map);
     }
+
+    @ExceptionHandler({UserNameNotFoundException.class, BadCredentialsException.class})
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    Result handleAuthenticationException(Exception exception){
+        return new Result(false, StatusCode.UNAUTHORIZED, exception.getMessage());
+    }
 }
