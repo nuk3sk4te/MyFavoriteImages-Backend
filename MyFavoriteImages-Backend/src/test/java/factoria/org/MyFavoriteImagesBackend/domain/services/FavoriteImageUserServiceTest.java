@@ -8,10 +8,12 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +29,9 @@ import static org.mockito.Mockito.*;
 class FavoriteImageUserServiceTest {
     @Mock
     FavoriteImageUserRepository userRepository;
+
+    @Mock
+    private PasswordEncoder passwordEncoder;
 
     @InjectMocks
     FavoriteImageUserService userService;
@@ -127,7 +132,7 @@ class FavoriteImageUserServiceTest {
         newUser.setEnabled(true);
         newUser.setRoles("user");
 
-        given(userRepository.save(newUser)).willReturn(newUser);
+        given(userRepository.save(ArgumentMatchers.any(FavoriteImageUser.class))).willReturn(newUser);
 
         //When
         FavoriteImageUser savedUser = userService.save(newUser);

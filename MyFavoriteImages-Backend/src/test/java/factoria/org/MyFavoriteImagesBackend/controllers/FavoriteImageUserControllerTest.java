@@ -17,6 +17,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.ArrayList;
@@ -70,6 +71,7 @@ class FavoriteImageUserControllerTest {
     }
 
     @Test
+    @WithMockUser(authorities = { "ADMIN" })
     void shouldFindUserByIdSuccessfully() throws Exception {
         //Given
         given(this.userService.findById(1L)).willReturn(this.users.get(0));
@@ -84,6 +86,7 @@ class FavoriteImageUserControllerTest {
     }
 
     @Test
+    @WithMockUser(authorities = { "ADMIN" })
     void shouldThrownErrorWhenUserNotFound() throws Exception {
         //Given
         given(this.userService.findById(1L)).willThrow(new ObjectNotFoundException("user", 1L));
@@ -97,6 +100,7 @@ class FavoriteImageUserControllerTest {
     }
 
     @Test
+    @WithMockUser(authorities = { "ADMIN" })
     void shouldFindAllUsersSuccessfully() throws Exception {
         //Given
         given(this.userService.findAll()).willReturn(this.users);
@@ -114,6 +118,7 @@ class FavoriteImageUserControllerTest {
     }
 
     @Test
+    @WithMockUser(authorities = { "ADMIN" })
     void shouldSaveUserSuccessfully() throws Exception {
         //Given
         UserDto userDto = new UserDto(null,
@@ -143,6 +148,7 @@ class FavoriteImageUserControllerTest {
     }
 
     @Test
+    @WithMockUser(authorities = { "ADMIN" })
     void shouldUpdateUserSuccessfully() throws Exception {
         //Given
         UserDto userDto = new UserDto(1L,
@@ -172,6 +178,7 @@ class FavoriteImageUserControllerTest {
     }
 
     @Test
+    @WithMockUser(authorities = { "ADMIN" })
     void shouldThrownErrorWithNonExistentUserIdWhenUpdate() throws Exception {
         //Given
         UserDto userDto = new UserDto(1L,
@@ -192,6 +199,7 @@ class FavoriteImageUserControllerTest {
     }
 
     @Test
+    @WithMockUser(authorities = { "ADMIN" })
     void shouldDeleteUserSuccessfully() throws Exception {
         //Given
         doNothing().when(this.userService).delete(1L);
@@ -205,6 +213,7 @@ class FavoriteImageUserControllerTest {
     }
 
     @Test
+    @WithMockUser(authorities = { "ADMIN" })
     void shouldThrownErrorWithNonExistentUserIdWhenDelete() throws Exception {
         //Given
         doThrow(new ObjectNotFoundException("user", 1L)).when(this.userService).delete(1L);
@@ -218,6 +227,7 @@ class FavoriteImageUserControllerTest {
     }
 
     @Test
+    @WithMockUser(authorities = { "ADMIN", "USER" })
     void shouldFindAllImagesByUserSuccessfully() throws Exception {
         //Given
         FavoriteImageUser user = new FavoriteImageUser();
@@ -250,6 +260,7 @@ class FavoriteImageUserControllerTest {
     }
 
     @Test
+    @WithMockUser(authorities = { "ADMIN", "USER" })
     void shouldDeleteImageByUserSuccessfully() throws Exception {
         //Given
         FavoriteImageUser user = new FavoriteImageUser();
@@ -286,6 +297,7 @@ class FavoriteImageUserControllerTest {
     }
 
     @Test
+    @WithMockUser(authorities = { "ADMIN", "USER" })
     void shouldThrownErrorWithNonExistentUserIdWhenDeleteImageByUser() throws Exception {
         //Given
         given(this.userService.findById(1L)).willThrow(new ObjectNotFoundException("user", 1L));
