@@ -1,6 +1,7 @@
 package factoria.org.MyFavoriteImagesBackend.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import factoria.org.MyFavoriteImagesBackend.domain.models.FavoriteImage;
 import factoria.org.MyFavoriteImagesBackend.domain.models.FavoriteImageUser;
 import factoria.org.MyFavoriteImagesBackend.domain.services.FavoriteImageUserService;
 import factoria.org.MyFavoriteImagesBackend.infra.dtos.UserDto;
@@ -10,7 +11,6 @@ import org.hamcrest.Matchers;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -22,7 +22,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doNothing;
@@ -129,7 +129,7 @@ class FavoriteImageUserControllerTest {
         savedUser.setEnabled(true);
         savedUser.setRoles("user");
 
-        given(this.userService.save(Mockito.any(FavoriteImageUser.class))).willReturn(savedUser);
+        given(this.userService.save(any(FavoriteImageUser.class))).willReturn(savedUser);
 
         //When and then
         this.mockMvc.perform(post(this.baseUrl).contentType(MediaType.APPLICATION_JSON).content(json).accept(MediaType.APPLICATION_JSON))
@@ -158,7 +158,7 @@ class FavoriteImageUserControllerTest {
         updatedUser.setEnabled(true);
         updatedUser.setRoles("user");
 
-        given(this.userService.update(eq(1L), Mockito.any(FavoriteImageUser.class))).willReturn(updatedUser);
+        given(this.userService.update(eq(1L), any(FavoriteImageUser.class))).willReturn(updatedUser);
 
         //When and then
         this.mockMvc.perform(put(this.baseUrl + "/1").contentType(MediaType.APPLICATION_JSON).content(json).accept(MediaType.APPLICATION_JSON))
@@ -181,7 +181,7 @@ class FavoriteImageUserControllerTest {
                 null);
         String json = this.objectMapper.writeValueAsString(userDto);
 
-        given(this.userService.update(eq(1L), Mockito.any(FavoriteImageUser.class))).willThrow(new ObjectNotFoundException("user", 1L));
+        given(this.userService.update(eq(1L), any(FavoriteImageUser.class))).willThrow(new ObjectNotFoundException("user", 1L));
 
         //When and then
         this.mockMvc.perform(put(this.baseUrl + "/1").contentType(MediaType.APPLICATION_JSON).content(json).accept(MediaType.APPLICATION_JSON))
@@ -217,4 +217,84 @@ class FavoriteImageUserControllerTest {
                 .andExpect(jsonPath("$.data").isEmpty());
     }
 
+    @Test
+    void shouldFindAllImagesByUserSuccessfully() throws Exception {
+        //Given
+        FavoriteImageUser user = new FavoriteImageUser();
+        user.setId(1L);
+        user.setUsername("User1");
+
+        FavoriteImage image1 = new FavoriteImage();
+        image1.setId(1L);
+        image1.setTitle("Image 1");
+        image1.setDescription("Image 1 description");
+        image1.setUrl("Image 1 URL");
+
+        FavoriteImage image2 = new FavoriteImage();
+        image2.setId(2L);
+        image2.setTitle("Image 2");
+        image2.setDescription("Image 2 description");
+        image2.setUrl("Image 2 URL");
+
+        user.addImage(image1);
+        user.addImage(image2);
+
+        given(userService.findById(1L)).willReturn(user);
+
+        //When and then
+        mockMvc.perform(get(this.baseUrl + "/1/images").contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.flag").value(true))
+                .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
+                .andExpect(jsonPath("$.message").value("Find All Success"))
+                .andExpect(jsonPath("$.data", Matchers.hasSize(2)));
+    }
+
+    @Test
+    void shouldDeleteImageByUserSuccessfully() throws Exception {
+        //Given
+        FavoriteImageUser user = new FavoriteImageUser();
+        user.setId(1L);
+        user.setUsername("User1");
+
+        FavoriteImage image1 = new FavoriteImage();
+        image1.setId(1L);
+        image1.setTitle("Image 1");
+        image1.setDescription("Image 1 description");
+        image1.setUrl("Image 1 URL");
+
+        user.addImage(image1);
+
+        given(userService.findById(1L)).willReturn(user);
+
+        //When and then
+        mockMvc.perform(get(this.baseUrl + "/1/images").contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.flag").value(true))
+                .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
+                .andExpect(jsonPath("$.message").value("Find All Success"))
+                .andExpect(jsonPath("$.data", Matchers.hasSize(1)));
+
+        user.getImages().remove(image1);
+
+        given(userService.findById(1L)).willReturn(user);
+
+        //When and then
+        this.mockMvc.perform(delete(this.baseUrl + "/1/images/1").accept(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.flag").value(true))
+                .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
+                .andExpect(jsonPath("$.message").value("Delete Success"))
+                .andExpect(jsonPath("$.data").isEmpty());
+    }
+
+    @Test
+    void shouldThrownErrorWithNonExistentUserIdWhenDeleteImageByUser() throws Exception {
+        //Given
+        given(this.userService.findById(1L)).willThrow(new ObjectNotFoundException("user", 1L));
+
+        //When and then
+        this.mockMvc.perform(delete(this.baseUrl + "/1/images/1").accept(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.flag").value(false))
+                .andExpect(jsonPath("$.code").value(StatusCode.NOT_FOUND))
+                .andExpect(jsonPath("$.message").value("Could not find user with id: 1"))
+                .andExpect(jsonPath("$.data").isEmpty());
+    }
 }
