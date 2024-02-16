@@ -3,6 +3,7 @@ package factoria.org.MyFavoriteImagesBackend.controllers;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import factoria.org.MyFavoriteImagesBackend.domain.models.FavoriteImage;
 import factoria.org.MyFavoriteImagesBackend.domain.models.FavoriteImageUser;
+import factoria.org.MyFavoriteImagesBackend.domain.services.FavoriteImageService;
 import factoria.org.MyFavoriteImagesBackend.domain.services.FavoriteImageUserService;
 import factoria.org.MyFavoriteImagesBackend.infra.dtos.UserDto;
 import factoria.org.MyFavoriteImagesBackend.infra.exceptions.ObjectNotFoundException;
@@ -39,9 +40,13 @@ class FavoriteImageUserControllerTest {
     MockMvc mockMvc;
     @MockBean
     FavoriteImageUserService userService;
+
+    @MockBean
+    FavoriteImageService imageService;
     @Autowired
     ObjectMapper objectMapper;
     List<FavoriteImageUser> users;
+
     @Value("/api/v1/users")
     String baseUrl;
 
@@ -64,6 +69,21 @@ class FavoriteImageUserControllerTest {
         user2.setEnabled(true);
         user2.setRoles("admin");
         this.users.add(user2);
+
+        FavoriteImage image1 = new FavoriteImage();
+        image1.setId(1L);
+        image1.setTitle("Image 1");
+        image1.setDescription("Description image 1");
+        image1.setUrl("image1 URL");
+
+        FavoriteImage image2 = new FavoriteImage();
+        image2.setId(2L);
+        image2.setTitle("Image 2");
+        image2.setDescription("Description image 2");
+        image2.setUrl("image2 URL");
+
+        user1.addImage(image1);
+        user1.addImage(image2);
     }
 
     @AfterEach
@@ -230,63 +250,25 @@ class FavoriteImageUserControllerTest {
     @WithMockUser(authorities = { "ADMIN", "USER" })
     void shouldFindAllImagesByUserSuccessfully() throws Exception {
         //Given
-        FavoriteImageUser user = new FavoriteImageUser();
-        user.setId(1L);
-        user.setUsername("User1");
-
-        FavoriteImage image1 = new FavoriteImage();
-        image1.setId(1L);
-        image1.setTitle("Image 1");
-        image1.setDescription("Image 1 description");
-        image1.setUrl("Image 1 URL");
-
-        FavoriteImage image2 = new FavoriteImage();
-        image2.setId(2L);
-        image2.setTitle("Image 2");
-        image2.setDescription("Image 2 description");
-        image2.setUrl("Image 2 URL");
-
-        user.addImage(image1);
-        user.addImage(image2);
-
-        given(userService.findById(1L)).willReturn(user);
+        given(this.userService.getUserImages(1L)).willReturn(this.users.get(0).getImages());
 
         //When and then
-        mockMvc.perform(get(this.baseUrl + "/1/images").contentType(MediaType.APPLICATION_JSON))
+        this.mockMvc.perform(get(this.baseUrl + "/1/images").accept(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.flag").value(true))
                 .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
                 .andExpect(jsonPath("$.message").value("Find All Success"))
-                .andExpect(jsonPath("$.data", Matchers.hasSize(2)));
+                .andExpect(jsonPath("$.data[0].id").value(1L))
+                .andExpect(jsonPath("$.data[0].title").value("Image 1"))
+                .andExpect(jsonPath("$.data[1].id").value(2L))
+                .andExpect(jsonPath("$.data[1].title").value("Image 2"));
     }
 
     @Test
     @WithMockUser(authorities = { "ADMIN", "USER" })
     void shouldDeleteImageByUserSuccessfully() throws Exception {
         //Given
-        FavoriteImageUser user = new FavoriteImageUser();
-        user.setId(1L);
-        user.setUsername("User1");
-
-        FavoriteImage image1 = new FavoriteImage();
-        image1.setId(1L);
-        image1.setTitle("Image 1");
-        image1.setDescription("Image 1 description");
-        image1.setUrl("Image 1 URL");
-
-        user.addImage(image1);
-
-        given(userService.findById(1L)).willReturn(user);
-
-        //When and then
-        mockMvc.perform(get(this.baseUrl + "/1/images").contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.flag").value(true))
-                .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
-                .andExpect(jsonPath("$.message").value("Find All Success"))
-                .andExpect(jsonPath("$.data", Matchers.hasSize(1)));
-
-        user.getImages().remove(image1);
-
-        given(userService.findById(1L)).willReturn(user);
+        given(this.userService.findById(1L)).willReturn(this.users.get(0));
+        doNothing().when(this.imageService).delete(1L);
 
         //When and then
         this.mockMvc.perform(delete(this.baseUrl + "/1/images/1").accept(MediaType.APPLICATION_JSON))
@@ -298,9 +280,10 @@ class FavoriteImageUserControllerTest {
 
     @Test
     @WithMockUser(authorities = { "ADMIN", "USER" })
-    void shouldThrownErrorWithNonExistentUserIdWhenDeleteImageByUser() throws Exception {
+    void shouldThrownErrorWithNonExistentUserIdWhenDeleteByUser() throws Exception {
         //Given
         given(this.userService.findById(1L)).willThrow(new ObjectNotFoundException("user", 1L));
+        doThrow(new ObjectNotFoundException("user", 1L)).when(this.userService).deleteImageByUser(1L, 1L);
 
         //When and then
         this.mockMvc.perform(delete(this.baseUrl + "/1/images/1").accept(MediaType.APPLICATION_JSON))

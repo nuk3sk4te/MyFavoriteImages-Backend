@@ -1,5 +1,6 @@
 package factoria.org.MyFavoriteImagesBackend.domain.services;
 
+import factoria.org.MyFavoriteImagesBackend.domain.models.FavoriteImage;
 import factoria.org.MyFavoriteImagesBackend.domain.models.FavoriteImageUser;
 import factoria.org.MyFavoriteImagesBackend.infra.MyUserPrincipal;
 import factoria.org.MyFavoriteImagesBackend.infra.exceptions.ObjectNotFoundException;
@@ -13,16 +14,19 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @Transactional
 public class FavoriteImageUserService implements UserDetailsService {
     private final FavoriteImageUserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final FavoriteImageService imageService;
 
-    public FavoriteImageUserService(FavoriteImageUserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public FavoriteImageUserService(FavoriteImageUserRepository userRepository, PasswordEncoder passwordEncoder, FavoriteImageService imageService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.imageService = imageService;
     }
 
     public FavoriteImageUser findById(Long userId) {
@@ -54,6 +58,23 @@ public class FavoriteImageUserService implements UserDetailsService {
         this.userRepository.findById(userId)
                 .orElseThrow(() -> new ObjectNotFoundException("user", userId));
         this.userRepository.deleteById(userId);
+    }
+
+    public List<FavoriteImage> getUserImages(Long userId) {
+        FavoriteImageUser user = findById(userId);
+        return user.getImages();
+
+    }
+
+    public void deleteImageByUser(Long userId, Long imageId) {
+        FavoriteImageUser foundUser = findById(userId);
+        FavoriteImage imageToRemove = foundUser.getImages().stream()
+                .filter(image -> Objects.equals(image.getId(), imageId))
+                .findFirst()
+                .orElse(null);
+        foundUser.getImages().remove(imageToRemove);
+        this.userRepository.save(foundUser);
+        this.imageService.delete(imageId);
     }
 
     @Override
