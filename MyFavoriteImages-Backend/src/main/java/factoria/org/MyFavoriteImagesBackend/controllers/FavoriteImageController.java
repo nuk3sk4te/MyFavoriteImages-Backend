@@ -18,7 +18,6 @@ import java.util.stream.Collectors;
 public class FavoriteImageController {
     private final FavoriteImageService imageService;
     private final ImageToImageDtoConverter imageToImageDtoConverter;
-
     private final ImageDtoToImageConverter imageDtoToImageConverter;
 
     public FavoriteImageController(FavoriteImageService imageService, ImageToImageDtoConverter imageToImageDtoConverter, ImageDtoToImageConverter imageDtoToImageConverter) {

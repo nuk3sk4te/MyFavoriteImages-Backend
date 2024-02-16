@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import factoria.org.MyFavoriteImagesBackend.domain.models.FavoriteImage;
 import factoria.org.MyFavoriteImagesBackend.domain.services.FavoriteImageService;
 import factoria.org.MyFavoriteImagesBackend.infra.dtos.ImageDto;
-import factoria.org.MyFavoriteImagesBackend.infra.exceptions.ImageNotFoundException;
+import factoria.org.MyFavoriteImagesBackend.infra.exceptions.ObjectNotFoundException;
 import factoria.org.MyFavoriteImagesBackend.infra.results.StatusCode;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.AfterEach;
@@ -96,7 +96,7 @@ class FavoriteImageControllerTest {
     @Test
     void shouldThrownErrorWhenImageNotFound() throws Exception {
         //Given
-        given(this.imageService.findById(1L)).willThrow(new ImageNotFoundException(1L));
+        given(this.imageService.findById(1L)).willThrow(new ObjectNotFoundException("image", 1L));
 
         //When and then
         this.mockMvc.perform(get(this.baseUrl + "/1").accept(MediaType.APPLICATION_JSON))
@@ -191,7 +191,7 @@ class FavoriteImageControllerTest {
                 null);
         String json = this.objectMapper.writeValueAsString(myFavoriteImageDto);
 
-        given(this.imageService.update(eq(1L), Mockito.any(FavoriteImage.class))).willThrow(new ImageNotFoundException(1L));
+        given(this.imageService.update(eq(1L), Mockito.any(FavoriteImage.class))).willThrow(new ObjectNotFoundException("image", 1L));
 
         //When and then
         this.mockMvc.perform(put(this.baseUrl + "/1").contentType(MediaType.APPLICATION_JSON).content(json).accept(MediaType.APPLICATION_JSON))
@@ -217,7 +217,7 @@ class FavoriteImageControllerTest {
     @Test
     void shouldThrownErrorWithNonExistentImageIdWhenDelete() throws Exception {
         //Given
-        doThrow(new ImageNotFoundException(1L)).when(this.imageService).delete(1L);
+        doThrow(new ObjectNotFoundException("image", 1L)).when(this.imageService).delete(1L);
 
         //When and then
         this.mockMvc.perform(delete(this.baseUrl + "/1").accept(MediaType.APPLICATION_JSON))

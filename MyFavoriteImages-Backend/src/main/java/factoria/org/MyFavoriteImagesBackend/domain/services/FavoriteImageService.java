@@ -1,7 +1,7 @@
 package factoria.org.MyFavoriteImagesBackend.domain.services;
 
 import factoria.org.MyFavoriteImagesBackend.domain.models.FavoriteImage;
-import factoria.org.MyFavoriteImagesBackend.infra.exceptions.ImageNotFoundException;
+import factoria.org.MyFavoriteImagesBackend.infra.exceptions.ObjectNotFoundException;
 import factoria.org.MyFavoriteImagesBackend.infra.persistence.FavoriteImageRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
@@ -19,7 +19,7 @@ public class FavoriteImageService {
 
     public FavoriteImage findById(Long imageId) {
         return this.imageRepository.findById(imageId)
-                .orElseThrow(() -> new ImageNotFoundException(imageId));
+                .orElseThrow(() -> new ObjectNotFoundException("image", imageId));
     }
 
     public List<FavoriteImage> findAll() {
@@ -38,12 +38,12 @@ public class FavoriteImageService {
                     oldImage.setUrl(updatedImage.getUrl());
                     return this.imageRepository.save(oldImage);
                 })
-                .orElseThrow(() -> new ImageNotFoundException(imageId));
+                .orElseThrow(() -> new ObjectNotFoundException("image", imageId));
     }
 
     public void delete(Long imageId) {
         this.imageRepository.findById(imageId)
-                .orElseThrow(() -> new ImageNotFoundException(imageId));
+                .orElseThrow(() -> new ObjectNotFoundException("image", imageId));
         this.imageRepository.deleteById(imageId);
     }
 }

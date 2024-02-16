@@ -1,6 +1,8 @@
 package factoria.org.MyFavoriteImagesBackend.domain.models;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import java.io.Serializable;
 @Entity
@@ -12,6 +14,7 @@ public class FavoriteImage implements Serializable {
     private String description;
     private String url;
     @ManyToOne
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private FavoriteImageUser owner;
 
     public FavoriteImage() {
