@@ -1,13 +1,19 @@
 package factoria.org.MyFavoriteImagesBackend.controllers;
 
 import factoria.org.MyFavoriteImagesBackend.domain.models.FavoriteImage;
+import factoria.org.MyFavoriteImagesBackend.domain.models.FavoriteImageUser;
+import factoria.org.MyFavoriteImagesBackend.domain.services.AuthService;
 import factoria.org.MyFavoriteImagesBackend.domain.services.FavoriteImageService;
 import factoria.org.MyFavoriteImagesBackend.infra.dtos.ImageDto;
 import factoria.org.MyFavoriteImagesBackend.infra.dtos.converters.ImageDtoToImageConverter;
 import factoria.org.MyFavoriteImagesBackend.infra.dtos.converters.ImageToImageDtoConverter;
+import factoria.org.MyFavoriteImagesBackend.infra.exceptions.UserNameNotFoundException;
+import factoria.org.MyFavoriteImagesBackend.infra.persistence.FavoriteImageUserRepository;
 import factoria.org.MyFavoriteImagesBackend.infra.results.Result;
 import factoria.org.MyFavoriteImagesBackend.infra.results.StatusCode;
 import jakarta.validation.Valid;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,11 +25,13 @@ public class FavoriteImageController {
     private final FavoriteImageService imageService;
     private final ImageToImageDtoConverter imageToImageDtoConverter;
     private final ImageDtoToImageConverter imageDtoToImageConverter;
+    private final FavoriteImageUserRepository userRepository;
 
-    public FavoriteImageController(FavoriteImageService imageService, ImageToImageDtoConverter imageToImageDtoConverter, ImageDtoToImageConverter imageDtoToImageConverter) {
+    public FavoriteImageController(FavoriteImageService imageService, ImageToImageDtoConverter imageToImageDtoConverter, ImageDtoToImageConverter imageDtoToImageConverter, FavoriteImageUserRepository userRepository) {
         this.imageService = imageService;
         this.imageToImageDtoConverter = imageToImageDtoConverter;
         this.imageDtoToImageConverter = imageDtoToImageConverter;
+        this.userRepository = userRepository;
     }
 
     @GetMapping("/{imageId}")
@@ -44,7 +52,12 @@ public class FavoriteImageController {
 
     @PostMapping
     public Result addImage(@RequestBody @Valid ImageDto myFavoriteImageDto) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String userName = authentication.getName();
+        FavoriteImageUser userEntity = userRepository.findByUsername(userName).orElseThrow( () -> new UserNameNotFoundException(userName));
         FavoriteImage newImage = this.imageDtoToImageConverter.convert(myFavoriteImageDto);
+        assert newImage != null;
+        newImage.setOwner(userEntity);
         FavoriteImage savedImage = this.imageService.save(newImage);
 
         ImageDto savedImageDto = this.imageToImageDtoConverter.convert(savedImage);

@@ -9,11 +9,10 @@ import org.springframework.stereotype.Component;
 public class UserToUserDtoConverter implements Converter<FavoriteImageUser, UserDto> {
     @Override
     public UserDto convert(FavoriteImageUser source) {
-        UserDto userDto = new UserDto(source.getId(),
+        return new UserDto(source.getId(),
                 source.getUsername(),
                 source.isEnabled(),
                 source.getRoles(),
                 source.getNumberOfImages());
-        return userDto;
     }
 }
