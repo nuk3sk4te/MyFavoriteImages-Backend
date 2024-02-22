@@ -27,7 +27,7 @@ public class FavoriteImageUserController {
 
     private final ImageToImageDtoConverter imageToImageDtoConverter;
 
-    public FavoriteImageUserController(FavoriteImageUserService userService, UserToUserDtoConverter userToUserDtoConverter, UserDtoToUserConverter userDtoToUserConverter, ImageToImageDtoConverter imageToImageDtoConverter, FavoriteImageService imageService) {
+    public FavoriteImageUserController(FavoriteImageUserService userService, UserToUserDtoConverter userToUserDtoConverter, UserDtoToUserConverter userDtoToUserConverter, ImageToImageDtoConverter imageToImageDtoConverter) {
         this.userService = userService;
         this.userToUserDtoConverter = userToUserDtoConverter;
         this.userDtoToUserConverter = userDtoToUserConverter;
@@ -53,6 +53,7 @@ public class FavoriteImageUserController {
     @PostMapping
     public Result addUser(@RequestBody @Valid UserDto userDto) {
         FavoriteImageUser newUser = this.userDtoToUserConverter.convert(userDto);
+        assert newUser != null;
         FavoriteImageUser savedUser = this.userService.save(newUser);
 
         UserDto savedUserDto = this.userToUserDtoConverter.convert(savedUser);

@@ -66,11 +66,6 @@ public class ExceptionHandlerAdvice {
         return new Result(false, StatusCode.FORBIDDEN, "Access denied", exception.getMessage());
     }
 
-    /**
-     * Fallback handles any unhandled exceptions.
-     * @param exception
-     * @return
-     */
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     Result handleOtherException(Exception exception){

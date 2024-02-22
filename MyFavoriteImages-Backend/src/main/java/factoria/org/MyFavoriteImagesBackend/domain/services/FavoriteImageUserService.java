@@ -80,7 +80,7 @@ public class FavoriteImageUserService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         return this.userRepository.findByUsername(username)
-                .map(user -> new MyUserPrincipal(user))
+                .map(MyUserPrincipal::new)
                 .orElseThrow(() -> new UserNameNotFoundException(username));
     }
 }
