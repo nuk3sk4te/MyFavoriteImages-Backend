@@ -15,11 +15,10 @@ public class ImageToImageDtoConverter implements Converter<FavoriteImage, ImageD
 
     @Override
     public ImageDto convert(FavoriteImage source) {
-        ImageDto imageDto = new ImageDto(source.getId(),
+        return new ImageDto(source.getId(),
                 source.getTitle(),
                 source.getDescription(),
                 source.getUrl(),
                 source.getOwner() != null ? this.userToUserDtoConverter.convert(source.getOwner()) : null);
-        return imageDto;
     }
 }

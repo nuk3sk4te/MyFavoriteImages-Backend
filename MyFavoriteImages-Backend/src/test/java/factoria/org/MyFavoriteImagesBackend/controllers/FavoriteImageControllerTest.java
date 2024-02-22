@@ -28,6 +28,7 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import org.springframework.security.test.context.support.WithMockUser;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -80,6 +81,7 @@ class FavoriteImageControllerTest {
     }
 
     @Test
+    @WithMockUser(authorities = { "ADMIN", "USER" })
     void shouldFindMyImageByIdSuccessfully() throws Exception {
         //Given
         given(this.imageService.findById(1L)).willReturn(this.images.get(0));
@@ -94,6 +96,7 @@ class FavoriteImageControllerTest {
     }
 
     @Test
+    @WithMockUser(authorities = { "ADMIN", "USER" })
     void shouldThrownErrorWhenImageNotFound() throws Exception {
         //Given
         given(this.imageService.findById(1L)).willThrow(new ObjectNotFoundException("image", 1L));
@@ -107,6 +110,7 @@ class FavoriteImageControllerTest {
     }
 
     @Test
+    @WithMockUser(authorities = { "ADMIN", "USER" })
     void shouldFindAllImagesSuccessfully() throws Exception {
         //Given
         given(this.imageService.findAll()).willReturn(this.images);
@@ -124,6 +128,7 @@ class FavoriteImageControllerTest {
     }
 
     @Test
+    @WithMockUser(authorities = { "ADMIN", "USER" })
     void shouldSaveImageSuccessfully() throws Exception {
         //Given
         ImageDto myFavoriteImageDto = new ImageDto(null,
@@ -153,6 +158,7 @@ class FavoriteImageControllerTest {
     }
 
     @Test
+    @WithMockUser(authorities = { "ADMIN", "USER" })
     void shouldUpdateImageSuccessfully() throws Exception {
         //Given
         ImageDto myFavoriteImageDto = new ImageDto(1L,
@@ -182,6 +188,7 @@ class FavoriteImageControllerTest {
     }
 
     @Test
+    @WithMockUser(authorities = { "ADMIN", "USER" })
     void shouldThrownErrorWithNonExistentImageIdWhenUpdate() throws Exception {
         //Given
         ImageDto myFavoriteImageDto = new ImageDto(1L,
@@ -202,6 +209,7 @@ class FavoriteImageControllerTest {
     }
 
     @Test
+    @WithMockUser(authorities = { "ADMIN", "USER" })
     void shouldDeleteImageSuccessfully() throws Exception {
         //Given
         doNothing().when(this.imageService).delete(1L);
@@ -215,6 +223,7 @@ class FavoriteImageControllerTest {
     }
 
     @Test
+    @WithMockUser(authorities = { "ADMIN", "USER" })
     void shouldThrownErrorWithNonExistentImageIdWhenDelete() throws Exception {
         //Given
         doThrow(new ObjectNotFoundException("image", 1L)).when(this.imageService).delete(1L);

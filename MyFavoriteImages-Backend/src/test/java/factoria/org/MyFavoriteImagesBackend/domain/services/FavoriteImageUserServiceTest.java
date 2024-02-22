@@ -8,10 +8,12 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,10 +30,18 @@ class FavoriteImageUserServiceTest {
     @Mock
     FavoriteImageUserRepository userRepository;
 
+    @Mock
+    FavoriteImageService imageService;
+
+    @Mock
+    private PasswordEncoder passwordEncoder;
+
     @InjectMocks
     FavoriteImageUserService userService;
 
     List<FavoriteImageUser> users;
+
+    List<FavoriteImage> images;
 
     @BeforeEach
     void setUp() {
@@ -52,6 +62,22 @@ class FavoriteImageUserServiceTest {
         this.users = new ArrayList<>();
         this.users.add(user1);
         this.users.add(user2);
+
+        FavoriteImage image1 = new FavoriteImage();
+        image1.setId(1L);
+        image1.setTitle("Image 1");
+        image1.setDescription("Description image 1");
+        image1.setUrl("image1 URL");
+
+        FavoriteImage image2 = new FavoriteImage();
+        image2.setId(2L);
+        image2.setTitle("Image 2");
+        image2.setDescription("Description image 2");
+        image2.setUrl("image2 URL");
+
+        this.images = new ArrayList<>();
+        this.images.add(image1);
+        this.images.add(image2);
     }
 
     @AfterEach
@@ -127,7 +153,7 @@ class FavoriteImageUserServiceTest {
         newUser.setEnabled(true);
         newUser.setRoles("user");
 
-        given(userRepository.save(newUser)).willReturn(newUser);
+        given(userRepository.save(ArgumentMatchers.any(FavoriteImageUser.class))).willReturn(newUser);
 
         //When
         FavoriteImageUser savedUser = userService.save(newUser);
@@ -185,6 +211,38 @@ class FavoriteImageUserServiceTest {
     }
 
     @Test
+    void shouldFindAllImagesByUserSuccessfully() throws Exception {
+        //Given
+        FavoriteImageUser user = new FavoriteImageUser();
+        user.setId(1L);
+        user.setUsername("User1");
+
+        FavoriteImage image1 = new FavoriteImage();
+        image1.setId(1L);
+        image1.setTitle("Image 1");
+        image1.setDescription("Image 1 description");
+        image1.setUrl("Image 1 URL");
+
+        FavoriteImage image2 = new FavoriteImage();
+        image2.setId(2L);
+        image2.setTitle("Image 2");
+        image2.setDescription("Image 2 description");
+        image2.setUrl("Image 2 URL");
+
+        user.addImage(image1);
+        user.addImage(image2);
+
+        given(userRepository.findById(1L)).willReturn(Optional.of(user));
+
+        //When
+        List<FavoriteImage> images = userService.getUserImages(user.getId());
+
+        //Then
+        assertThat(user.getImages().size()).isEqualTo(2);
+        verify(userRepository, times(1)).findById(user.getId());
+    }
+
+    @Test
     void shouldDeleteSuccessfully() {
         //Given
         FavoriteImageUser user = new FavoriteImageUser();
@@ -211,6 +269,55 @@ class FavoriteImageUserServiceTest {
         //When
         assertThrows(ObjectNotFoundException.class,() -> {
             userService.delete(1L);
+        });
+
+        //Then
+        verify(userRepository, times(1)).findById(1L);
+    }
+
+    @Test
+    void shouldDeleteByUserSuccessfully() {
+        //Given
+        FavoriteImageUser user = new FavoriteImageUser();
+        user.setId(1L);
+        user.setUsername("User");
+        user.setEnabled(true);
+        user.setRoles("user");
+
+        FavoriteImage image1 = new FavoriteImage();
+        image1.setId(1L);
+        image1.setTitle("Image 1");
+        image1.setDescription("Image 1 description");
+        image1.setUrl("Image 1 URL");
+
+        FavoriteImage image2 = new FavoriteImage();
+        image2.setId(2L);
+        image2.setTitle("Image 2");
+        image2.setDescription("Image 2 description");
+        image2.setUrl("Image 2 URL");
+
+        user.addImage(image1);
+        user.addImage(image2);
+
+        given(userRepository.findById(1L)).willReturn(Optional.of(user));
+
+        //When
+        userService.deleteImageByUser(1L, 1L);
+
+        //Then
+        assertThat(user.getNumberOfImages()).isEqualTo(1);
+        verify(userRepository, times(1)).findById(1L);
+        verify(imageService, times(1)).delete(1L);
+    }
+
+    @Test
+    void shouldThrownErrorWithNonExistentIdWhenDeleteByUser() {
+        //Given
+        given(userRepository.findById(1L)).willReturn(Optional.empty());
+
+        //When
+        assertThrows(ObjectNotFoundException.class,() -> {
+            userService.deleteImageByUser(1L, 1L);
         });
 
         //Then
