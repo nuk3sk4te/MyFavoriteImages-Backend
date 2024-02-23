@@ -38,18 +38,20 @@ Galeria
 
 `clonar el repositorio: https://github.com/crismouta/MyFavoriteImages-Backend.git`
 
-`configurar las variables de entorno necesarias para conexión con Base de Datos PostgreSQL en el archivo 'src/resources/main/application.properties'.`
+`instalar Java17`
 
-`los datos de prueba están en el archivo DataInitializer, se puede modificar para tener datos de prueba distintos'.`
+`configurar datos necesarios para conexión con Base de Datos PostgreSQL en el archivo 'src/resources/main/application.properties.`
+
+`los datos de prueba están en el archivo DataInitializer, se puede modificar para tener datos de prueba distintos.`
 
 
 ## Running app
 
-`Ejecutar la aplicación Java desde tu IDE favorito`
+`Para el desarrollo de este proyecto se ha usado el IDE Intellij Community pero se puede ejecutar la aplicación Java desde tu IDE favorito haciendo las configuraciones necesarias.`
 
 ## Running Tests
 
-`Ejecutar el entorno de tests Junit desde tu IDE favorito`
+`Para el desarrollo de este proyecto se ha usado el IDE Intellij Community pero se puede ejecutar los tests Java desde tu IDE favorito haciendo las configuraciones necesarias.`
 
 ## Metodología de trabajo, arquitectura y técnicas
 
@@ -61,7 +63,7 @@ Galeria
 
 
 ## Herramientas y tecnologías utilizadas
-- Java
+- Java 17
 - Spring Boot
 - Spring Security
 - Basic Auth
