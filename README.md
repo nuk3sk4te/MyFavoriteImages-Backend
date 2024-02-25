@@ -55,7 +55,7 @@ Galeria
 
 ## Metodología de trabajo, arquitectura y técnicas
 
--   Spring MVC
+-   Spring Boot (Structure by Layer)
 -   Patrón de diseño Repository
 -   Servicios
 -   TDD
