@@ -16,7 +16,7 @@ pipeline {
             steps {
                 script {
                     // Build and deploy the application using docker-compose
-                    sh 'docker compose -f docker-compose.yml up -d --build'
+                    sh 'cd MyFavoriteImages-Backend && docker compose -f docker-compose.yml up -d --build'
                 }
             }
         }
