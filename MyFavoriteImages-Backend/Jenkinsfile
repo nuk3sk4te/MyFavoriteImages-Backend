@@ -1,6 +1,10 @@
 pipeline {
     agent any
 
+    parameters {
+        choice(name: 'ACTION', choices: ['start', 'stop'], description: 'Choose action to perform')
+    }
+
     environment {
         DOCKER_COMPOSE_FILE = 'docker-compose.yml'
         SPRING_DATASOURCE_PASSWORD = credentials('SPRING_DATASOURCE_PASSWORD')
@@ -15,10 +19,24 @@ pipeline {
             }
         }
         stage('Build and Deploy') {
+            when {
+                expression { params.ACTION == 'start' }
+            }
             steps {
                 script {
                     // Build and deploy the application using docker-compose
                     sh 'cd MyFavoriteImages-Backend && docker compose -f docker-compose.yml up -d --build'
+                }
+            }
+        }
+        stage('Stop Containers') {
+            when {
+                expression { params.ACTION == 'stop' }
+            }
+            steps {
+                script {
+                    Stop the containers using docker-compose
+                    sh 'cd MyFavoriteImages-Backend && docker compose -f docker-compose.yml stop'
                 }
             }
         }
@@ -30,10 +48,10 @@ pipeline {
             cleanWs()
         }
         success {
-            echo 'Deployment successful!'
+            echo 'Pipeline completed successfully!'
         }
         failure {
-            echo 'Deployment failed!'
+            echo 'Pipeline failed!'
         }
     }
 }
